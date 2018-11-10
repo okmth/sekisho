@@ -9,7 +9,7 @@ module Sekisho
   extend ActiveSupport::Concern
 
   def authorize!(resource = nil)
-    policy = Sekisho::PolicyLoader.new(policy_class).load!.new(resource, sekisho_user)
+    policy = Sekisho::PolicyLoader.new(policy_class).load!.new(resource)
     policy.send(Sekisho.config.query_method) or raise Sekisho::Errors::NotAuthorizedError
   end
 

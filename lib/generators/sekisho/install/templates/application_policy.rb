@@ -5,8 +5,7 @@ class Application<%= Sekisho.config.suffix %>
 
   attr_reader :user, :record
 
-  def initialize(user, record)
-    @user = user
+  def initialize(record)
     @record = record
   end
 end
