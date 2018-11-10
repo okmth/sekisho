@@ -1,13 +1,16 @@
 require "active_support/concern"
 require "sekisho/version"
 require "sekisho/config"
+require "sekisho/policy_loader"
+require "sekisho/policy_class"
+Dir[File.dirname(__FILE__) + "/sekisho/*/*.rb"].each { |file| require file }
 
 module Sekisho
   extend ActiveSupport::Concern
 
   def authorize!(resource = nil)
     policy = Sekisho::PolicyLoader.new(policy_class).load!.new(resource, sekisho_user)
-    policy.send(Sekisho.config.query_method) or raise Errors::NotAuthorizedError
+    policy.send(Sekisho.config.query_method) or raise Sekisho::Errors::NotAuthorizedError
   end
 
   private
