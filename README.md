@@ -1,43 +1,91 @@
 # Sekisho
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/sekisho`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
-
 ## Installation
 
-Add this line to your application's Gemfile:
 
 ```ruby
 gem 'sekisho'
 ```
 
-And then execute:
+Include Sekisho in your application controller.
 
-    $ bundle
 
-Or install it yourself as:
+```ruby
+class ApplicationController < ActionController::Base
+  include Sekisho
+  include Sekisho::Default::Deny
+end
+```
 
-    $ gem install sekisho
+```ruby
+rails g sekisho:install
+```
+
+## Configuration
+```ruby
+# config/initializers/sekisho_config.rb
+Sekisho.configure do |config|
+  config.suffix       = "Loyalty"
+  config.query_method = :accessible?
+  config.shared_dir   = :shared
+end
+```
+
 
 ## Usage
 
-TODO: Write usage instructions here
+Generate Policy class for controller
 
-## Development
+```ruby
+rails g sekisho:policy posts index
+```
+or
+```ruby
+rails g sekisho:policy users::posts index
+```
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+## Policies
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To adapt the policy to the controller, 
 
-## Contributing
+```ruby
+# app/policies/posts/posts_policy.rb
+module Posts
+  class PostsPolicy < ApplicationPolicy
+    def authorized?
+      true
+    end
+  end
+end
+```
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/sekisho. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+When policy is applied for each action method,
+
+```ruby
+# app/policies/posts/actions/index_policy.rb
+module Posts
+  module Actions
+    class IndexPolicy < PostsPolicy
+      def authorized?
+        user.admin? || record.user == user
+      end
+    end
+  end
+end
+```
+
+## Controller
+```ruby
+# app/controllers/posts_controller.rb
+class PostsController < ApplicationController
+  def index
+    @posts = Post.all
+    authorize!
+  end
+end
+
+```
 
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Sekisho project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/sekisho/blob/master/CODE_OF_CONDUCT.md).
